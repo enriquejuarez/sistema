@@ -19,12 +19,12 @@
                     <div class="form-group row">
                         <div class="col-md-6">
                             <div class="input-group">
-                                <select class="form-control col-md-3" id="opcion" name="opcion">
+                                <select class="form-control col-md-3" v-model="criterio">
                                   <option value="nombre">Nombre</option>
                                   <option value="descripcion">Descripción</option>
                                 </select>
-                                <input type="text" id="texto" name="texto" class="form-control" placeholder="Texto a buscar">
-                                <button type="submit" class="btn btn-primary"><i class="fa fa-search"></i> Buscar</button>
+                                <input type="text" v-model="buscar" @keyup.enter="listarCategoria(1, buscar, criterio)" class="form-control" placeholder="Texto a buscar">
+                                <button type="submit" @click="listarCategoria(1, buscar, criterio)" class="btn btn-primary"><i class="fa fa-search"></i> Buscar</button>
                             </div>
                         </div>
                     </div>
@@ -43,9 +43,16 @@
                                     <button type="button" @click="abrirModal('categoria', 'actualizar', categoria)" class="btn btn-warning btn-sm">
                                       <i class="icon-pencil"></i>
                                     </button> &nbsp;
-                                    <button type="button" class="btn btn-danger btn-sm">
-                                      <i class="icon-trash"></i >
-                                    </button>
+                                    <template v-if="categoria.condicion">
+                                        <button type="button" class="btn btn-danger btn-sm" @click="desactivarCategoria(categoria.id)">
+                                            <i class="icon-trash"></i >
+                                        </button>
+                                    </template>
+                                    <template v-else>
+                                        <button type="button" class="btn btn-info btn-sm" @click="activarCategoria(categoria.id)">
+                                            <i class="icon-check"></i >
+                                        </button>
+                                    </template>
                                 </td>
                                 <td v-text="categoria.nombre"></td>
                                 <td v-text="categoria.descripcion"></td>
@@ -54,7 +61,7 @@
                                         <span class="badge badge-success">Activo</span>    
                                     </div>
                                     <div v-else>
-                                        <span class="badge badge-da">Desactivado</span>    
+                                        <span class="badge badge-danger">Desactivado</span>    
                                     </div>
                                     
                                 </td>
@@ -63,23 +70,14 @@
                     </table>
                     <nav>
                         <ul class="pagination">
-                            <li class="page-item">
-                                <a class="page-link" href="#">Ant</a>
+                            <li class="page-item" v-if="pagination.current_page > 1">
+                                <a class="page-link" href="#" @click.prevent="cambiarPagina(pagination.current_page - 1, buscar, criterio)">Ant</a>
                             </li>
-                            <li class="page-item active">
-                                <a class="page-link" href="#">1</a>
-                            </li>
-                            <li class="page-item">
-                                <a class="page-link" href="#">2</a>
+                            <li class="page-item" v-for="page in pagesNumber" :key="page" :class="[page == isActived ? 'active' : '']">
+                                <a class="page-link" href="#" @click.prevent = "cambiarPagina(page, buscar, criterio)" v-text="page"></a>
                             </li>
                             <li class="page-item">
-                                <a class="page-link" href="#">3</a>
-                            </li>
-                            <li class="page-item">
-                                <a class="page-link" href="#">4</a>
-                            </li>
-                            <li class="page-item">
-                                <a class="page-link" href="#">Sig</a>
+                                <a class="page-link" href="#" v-if="pagination.current_page < pagination.last_page" @click.prevent="cambiarPagina(pagination.current_page + 1, buscar, criterio)">Sig</a>
                             </li>
                         </ul>
                     </nav>
@@ -129,29 +127,6 @@
             <!-- /.modal-dialog -->
         </div>
         <!--Fin del modal-->
-        <!-- Inicio del modal Eliminar -->
-        <div class="modal fade" id="modalEliminar" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" style="display: none;" aria-hidden="true">
-            <div class="modal-dialog modal-danger" role="document">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h4 class="modal-title">Eliminar Categoría</h4>
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                          <span aria-hidden="true">×</span>
-                        </button>
-                    </div>
-                    <div class="modal-body">
-                        <p>Estas seguro de eliminar la categoría?</p>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
-                        <button type="button" class="btn btn-danger">Eliminar</button>
-                    </div>
-                </div>
-                <!-- /.modal-content -->
-            </div>
-            <!-- /.modal-dialog -->
-        </div>
-        <!-- Fin del modal Eliminar -->
     </main>
 </template>
 
@@ -167,18 +142,61 @@
               tituloModal : '',
               tipoAccion : 0,
               errorCategoria : 0,
-              errorMostrarMsjCategoria : []
+              errorMostrarMsjCategoria : [],
+              pagination : {
+                'total' : 0,
+                'current_page' : 0,
+                'per_page' : 0,
+                'last_page' : 0,
+                'from' : 0,
+                'to' : 0,
+              },
+              offset : 3,
+              criterio : 'nombre',
+              buscar : '',
           }  
         },
+        computed:{
+            isActived: function(){
+                return this.pagination.current_page;
+            },
+            pagesNumber: function(){
+                if(!this.pagination.to){
+                    return [];
+                }
+                var from = this.pagination.current_page - this.offset;
+                if(from < 1){
+                    from = 1;
+                }
+                var to = from + (this.offset * 2);
+                if (to >= this.pagination.last_page){
+                    to = this.pagination.last_page;
+                }
+                var pagesArray = [];
+                while (from <= to){
+                    pagesArray.push(from);
+                    from++;
+                }
+                return pagesArray;
+            }
+        },
         methods : {
-          listarCategoria(){
+          listarCategoria(page, buscar, criterio){
               let me = this;
-              axios.get('/categoria').then(function (response){
-                me.arrayCategoria = response.data;
+              var url = '/categoria?page=' + page + '&buscar=' + buscar + '&criterio=' + criterio;
+              axios.get(url).then(function (response){
+                var respuesta = response.data;
+                me.arrayCategoria = respuesta.categorias.data;
+                me.pagination = respuesta.pagination;
               })
               .catch(function (error){
                 console.log(error);    
               })
+          },
+          cambiarPagina(page, buscar, criterio){
+            let me = this;
+            me.pagination.current_page = page;
+            me.listarCategoria(page, buscar, criterio);
           },
           registrarCategoria(){
               if(this.validarCategoria()){
@@ -190,7 +208,7 @@
                   'descripcion': this.descripcion
               }).then(function (response){
                 me.cerrarModal();
-                  me.listarCategoria();
+                  me.listarCategoria(1, '', 'nombre');
               })
               .catch(function (error){
                 console.log(error);    
@@ -207,11 +225,75 @@
                   'id' : this.categoria_id
               }).then(function (response){
                 me.cerrarModal();
-                  me.listarCategoria();
+                  me.listarCategoria(1, '', 'nombre');
               })
               .catch(function (error){
                 console.log(error);    
               })       
+          },
+          desactivarCategoria(id){
+            swal({
+              title: '¿Está seguro de desactivar esta categoría',
+              text: "",
+              type: 'warning',
+              showCancelButton: true,
+              confirmButtonColor: '#3085d6',
+              cancelButtonColor: '#d33', 
+              cancelButtonText: 'Cancelar',
+              confirmButtonText: 'Aceptar'
+            }).then((result) => {
+              if (result.value) {
+                  let me = this;
+                  axios.put('/categoria/desactivar',{
+                      'id' : id
+                  }).then(function (response){
+                      me.listarCategoria(1, '', 'nombre');
+                      swal(
+                          'Desactivado',
+                          'El registro ha sido desactivado con éxito',
+                          'success'
+                        )
+                  })
+                  .catch(function (error){
+                    console.log(error);    
+                  }) 
+                
+              }else if(result.dismiss === swal.DismissReason.cancel){
+
+              }
+            })
+          },
+          activarCategoria(id){
+            swal({
+              title: '¿Está seguro de activar esta categoría',
+              text: "",
+              type: 'warning',
+              showCancelButton: true,
+              confirmButtonColor: '#3085d6',
+              cancelButtonColor: '#d33', 
+              cancelButtonText: 'Cancelar',
+              confirmButtonText: 'Aceptar'
+            }).then((result) => {
+              if (result.value) {
+                  let me = this;
+                  axios.put('/categoria/activar',{
+                      'id' : id
+                  }).then(function (response){
+                      me.listarCategoria(1, '', 'nombre');
+                      swal(
+                          'Activado',
+                          'El registro ha sido activado con éxito',
+                          'success'
+                        )
+                  })
+                  .catch(function (error){
+                    console.log(error);    
+                  }) 
+                
+              }else if(result.dismiss === swal.DismissReason.cancel){
+
+              }
+            })
           },
           validarCategoria(){
               this.errorCategoria = 0;
@@ -258,7 +340,7 @@
           }
         },
         mounted() {
-            this.listarCategoria();
+            this.listarCategoria(1, this.buscar, this.nombre);
         }
     }
 </script>
