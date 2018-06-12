@@ -21,7 +21,7 @@ class CategoriaController extends Controller
         $criterio  = $request->criterio;
 
         if ($buscar=='') {
-            $categorias = Categoria::orderBy('id', 'desc')->paginate(2);
+            $categorias = Categoria::orderBy('id', 'desc')->paginate(3);
         }
         else{
             $categorias = Categoria::where($criterio, 'like', '%'.$buscar.'%')->orderBy('id', 'desc')->paginate(2);    
@@ -39,7 +39,13 @@ class CategoriaController extends Controller
         ];
     }
 
-    
+    public function selectCategoria(Request $request)
+    {
+        //if (!$request->ajax()) return redirect('/'); //Procede sólo cuando la petición haya sido mediante ajax
+        $categorias = Categoria::where('condicion', '=', '1')
+        ->select('id', 'nombre')->orderBy('nombre', 'asc')->get();
+        return ['categorias' => $categorias];
+    }
     /**
      * Store a newly created resource in storage.
      *
