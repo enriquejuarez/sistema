@@ -3,17 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Persona;
-use App\Proveedor;
+use App\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
-class ProveedorController extends Controller
+class UserController extends Controller
 {
-        /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
     public function index(Request $request)
     {
         if (!$request->ajax()) return redirect('/'); //Procede sólo cuando la petición haya sido mediante ajax
@@ -22,14 +17,16 @@ class ProveedorController extends Controller
         $criterio  = $request->criterio;
 
         if ($buscar=='') {
-            $personas = Proveedor::join('personas', 'proveedores.id', '=', 'personas.id')
-            ->select('personas.id', 'personas.nombre', 'personas.tipo_documento', 'personas.num_documento', 'personas.direccion', 'personas.telefono', 'personas.email', 'proveedores.contacto', 'proveedores.telefono_contacto')
+            $personas = User::join('personas', 'users.id', '=', 'personas.id')
+            ->join('roles', 'users.idrol', '=', 'roles.id')
+            ->select('personas.id', 'personas.nombre', 'personas.tipo_documento', 'personas.num_documento', 'personas.direccion', 'personas.telefono', 'personas.email', 'users.usuario', 'users.password', 'users.condicion', 'users.idrol', 'roles.nombre as rol')
             ->orderBy('personas.id', 'desc')->paginate(3);
         }
         else{
-            $personas = Proveedor::join('personas', 'proveedores.id', '=', 'personas.id')
-            ->select('personas.id', 'personas.nombre', 'personas.tipo_documento', 'personas.num_documento', 'personas.direccion', 'personas.telefono', 'personas.email', 'proveedores.contacto', 'proveedores.telefono_contacto')
-            ->where('personas.'.$criterio, 'like', '%'.$buscar.'%')->orderBy('personas.id', 'desc')->paginate(2);    
+            $personas = User::join('personas', 'users.id', '=', 'personas.id')
+            ->join('roles', 'users.idrol', '=', 'roles.id')
+            ->select('personas.id', 'personas.nombre', 'personas.tipo_documento', 'personas.num_documento', 'personas.direccion', 'personas.telefono', 'personas.email', 'users.usuario', 'users.password', 'users.condicion', 'users.idrol', 'roles.nombre as rol')
+            ->where('personas.'.$criterio, 'like', '%'.$buscar.'%')->orderBy('personas.id', 'desc')->paginate(3);    
         }
         return [
             'pagination' => [
@@ -64,11 +61,13 @@ class ProveedorController extends Controller
 	        $persona->email = $request->email;
 	        $persona->save();
 
-	        $proveedor = new Proveedor();
-	        $proveedor->contacto = $request->contacto;
-	        $proveedor->telefono_contacto = $request->telefono_contacto;
-	        $proveedor->id = $persona->id;
-	        $proveedor->save();
+	        $user = new User();
+	        $user->usuario = $request->usuario;
+	        $user->password = bcrypt($request->password);
+	        $user->condicion = '1';
+	        $user->idrol = $request->idrol;
+	        $user->id = $persona->id;
+	        $user->save();
 
 	        DB::commit();
 
@@ -89,8 +88,8 @@ class ProveedorController extends Controller
         if (!$request->ajax()) return redirect('/');
         try {
 			DB::beginTransaction();
-        	$proveedor = Proveedor::findOrFail($request->id);
-        	$persona = Persona::findOrFail($proveedor->id);
+        	$user = User::findOrFail($request->id);
+        	$persona = Persona::findOrFail($user->id);
 
 	        $persona->nombre = $request->nombre;
 	        $persona->tipo_documento = $request->tipo_documento;
@@ -100,13 +99,31 @@ class ProveedorController extends Controller
 	        $persona->email = $request->email;
 	        $persona->save();
 
-	        $proveedor->contacto = $request->contacto;
-	        $proveedor->telefono_contacto = $request->telefono_contacto;
-	        $proveedor->save();
+	        $user->usuario = $request->usuario;
+	        $user->password = bcrypt($request->password);
+	        $user->condicion = '1';
+	        $user->idrol = $request->idrol;
+	        $user->save();
 
 	        DB::commit();
         } catch (Exception $e) {
         	DB::rollBack();
         }
+    }
+
+    public function desactivar(Request $request)
+    {
+        if (!$request->ajax()) return redirect('/');
+        $user = User::findOrFail($request->id);
+        $user->condicion = '0';
+        $user->save();
+    }
+    
+      public function activar(Request $request)
+    {
+        if (!$request->ajax()) return redirect('/');
+        $user = User::findOrFail($request->id);
+        $user->condicion = '1';
+        $user->save();
     }
 }
