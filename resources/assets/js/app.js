@@ -26,6 +26,6 @@ Vue.component('user', require('./components/User.vue'));
 const app = new Vue({
     el: '#app',
     data: {
-        menu: 0
+        menu: 0,
     }
 });

@@ -27,6 +27,8 @@ class CreateUsersTable extends Migration
             $table->rememberToken();
             //$table->timestamps();
         });
+        DB::table('personas')->insert(array('id'=>'1', 'nombre'=>'root', 'tipo_documento'=>'DUC', 'num_documento' => '1345', 'direccion' => 'Cuahutemoc 23', 'telefono' => '2281152345', 'email' => 'caenjuji@gmail.com'));
+        DB::table('users')->insert(array('id'=>'1', 'usuario'=>'caenjuji', 'password'=>bcrypt('123'), 'condicion'=>'1', 'idrol' => '1'));
     }
 
     /**

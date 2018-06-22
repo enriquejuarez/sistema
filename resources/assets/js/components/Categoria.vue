@@ -180,6 +180,7 @@
         },
         methods : {
           listarCategoria(page, buscar, criterio){
+            console.log("Entra el metodo de listar categoria");
               let me = this;
               var url = '/categoria?page=' + page + '&buscar=' + buscar + '&criterio=' + criterio;
               axios.get(url).then(function (response){

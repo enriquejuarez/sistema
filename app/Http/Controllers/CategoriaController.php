@@ -16,7 +16,6 @@ class CategoriaController extends Controller
     public function index(Request $request)
     {
         if (!$request->ajax()) return redirect('/'); //Procede sólo cuando la petición haya sido mediante ajax
-        
         $buscar  = $request->buscar;
         $criterio  = $request->criterio;
 

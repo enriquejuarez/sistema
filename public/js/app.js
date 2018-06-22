@@ -34388,7 +34388,7 @@ var staticRenderFns = [
         _c("div", { staticClass: "card" }, [
           _c("div", { staticClass: "card-header" }, [
             _c("i", { staticClass: "fa fa-align-justify" }),
-            _vm._v(" Categorías\n                    "),
+            _vm._v(" Categorías\r\n                    "),
             _c(
               "button",
               {
@@ -34401,7 +34401,7 @@ var staticRenderFns = [
               },
               [
                 _c("i", { staticClass: "icon-plus" }),
-                _vm._v(" Nuevo\n                    ")
+                _vm._v(" Nuevo\r\n                    ")
               ]
             )
           ]),
@@ -34483,7 +34483,7 @@ var staticRenderFns = [
                         },
                         [_c("i", { staticClass: "icon-pencil" })]
                       ),
-                      _vm._v("  \n                                    "),
+                      _vm._v("  \r\n                                    "),
                       _c(
                         "button",
                         {
@@ -34523,7 +34523,7 @@ var staticRenderFns = [
                         },
                         [_c("i", { staticClass: "icon-pencil" })]
                       ),
-                      _vm._v("  \n                                    "),
+                      _vm._v("  \r\n                                    "),
                       _c(
                         "button",
                         {
@@ -34563,7 +34563,7 @@ var staticRenderFns = [
                         },
                         [_c("i", { staticClass: "icon-pencil" })]
                       ),
-                      _vm._v("  \n                                    "),
+                      _vm._v("  \r\n                                    "),
                       _c(
                         "button",
                         {
@@ -34603,7 +34603,7 @@ var staticRenderFns = [
                         },
                         [_c("i", { staticClass: "icon-pencil" })]
                       ),
-                      _vm._v("  \n                                    "),
+                      _vm._v("  \r\n                                    "),
                       _c(
                         "button",
                         {
@@ -34643,7 +34643,7 @@ var staticRenderFns = [
                         },
                         [_c("i", { staticClass: "icon-pencil" })]
                       ),
-                      _vm._v(" \n                                    "),
+                      _vm._v(" \r\n                                    "),
                       _c(
                         "button",
                         {
@@ -35248,6 +35248,7 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
     },
     methods: {
         listarCategoria: function listarCategoria(page, buscar, criterio) {
+            console.log("Entra el metodo de listar categoria");
             var me = this;
             var url = '/categoria?page=' + page + '&buscar=' + buscar + '&criterio=' + criterio;
             axios.get(url).then(function (response) {
