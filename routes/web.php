@@ -10,10 +10,10 @@
 | contains the "web" middleware group. Now create something great!
 |
 */
-// Route::group(['middleware'=>['guest']], function(){
-// 	Route::get('/', 'Auth\LoginController@showLoginForm');
-// 	Route::post('/', 'Auth\LoginController@login')->name('login');
-// });
+Route::group(['middleware'=>['guest']], function(){
+	Route::get('/', 'Auth\LoginController@showLoginForm');
+	Route::post('/', 'Auth\LoginController@login')->name('login');
+});
 
 Route::group(['middleware'=>['auth']], function(){
 	Route::post('/logout', 'Auth\LoginController@logout')->name('logout');
@@ -39,6 +39,10 @@ Route::group(['middleware'=>['auth']], function(){
 		Route::get('/proveedor', 'ProveedorController@index');
 		Route::post('/proveedor/registrar', 'ProveedorController@store');
 		Route::put('/proveedor/actualizar', 'ProveedorController@update');
+
+		Route::get('/ingreso', 'IngresoController@index');
+		Route::post('/ingreso/registrar', 'IngresoController@store');
+		Route::put('/ingreso/desactivar', 'IngresoController@desactivar');
 	});
 
 	Route::group(['middleware'=>['Vendedor']], function(){
@@ -77,6 +81,10 @@ Route::group(['middleware'=>['auth']], function(){
 		Route::put('/user/actualizar', 'UserController@update');
 		Route::put('/user/desactivar', 'UserController@desactivar');
 		Route::put('/user/activar', 'UserController@activar');
+
+		Route::get('/ingreso', 'IngresoController@index');
+		Route::post('/ingreso/registrar', 'IngresoController@store');
+		Route::put('/ingreso/desactivar', 'IngresoController@desactivar');
 	});
 });
 
